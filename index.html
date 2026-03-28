@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NOTHING TO ADD — Official Ticketing</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Exo+2:wght@200;400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --deep-black: #020408;
+      --space-dark: #060c14;
+      --panel: rgba(8,18,35,0.92);
+      --accent-cyan: #00e5ff;
+      --accent-gold: #f0a500;
+      --accent-purple: #7c3aff;
+      --text-primary: #e8f4ff;
+      --text-muted: #4a7a9b;
+      --text-dim: #1e3a52;
+      --border: rgba(0,229,255,0.15);
+      --border-bright: rgba(0,229,255,0.5);
+      --glow-cyan: 0 0 20px rgba(0,229,255,0.4),0 0 60px rgba(0,229,255,0.1);
+      --glow-gold: 0 0 20px rgba(240,165,0,0.4),0 0 60px rgba(240,165,0,0.1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{background:var(--deep-black);color:var(--text-primary);font-family:'Exo 2',sans-serif;font-weight:200;overflow-x:hidden;cursor:crosshair;}
+
+    /* STARFIELD */
+    #starfield{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0;overflow:hidden;}
+    .star{position:absolute;background:white;border-radius:50%;animation:twinkle var(--dur) var(--delay) infinite alternate ease-in-out;}
+    @keyframes twinkle{from{opacity:var(--min);}to{opacity:var(--max);}}
+
+    /* SCANLINES */
+    body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);pointer-events:none;z-index:9999;}
+
+    /* NAV */
+    nav{position:fixed;top:0;left:0;right:0;z-index:1000;display:flex;justify-content:space-between;align-items:center;padding:1.2rem 3rem;background:linear-gradient(180deg,rgba(2,4,8,0.95) 0%,transparent 100%);border-bottom:1px solid var(--border);backdrop-filter:blur(8px);}
+    .nav-logo{font-family:'Orbitron',monospace;font-weight:900;font-size:1rem;letter-spacing:0.4em;color:var(--accent-cyan);text-shadow:var(--glow-cyan);text-decoration:none;}
+    .nav-links{display:flex;gap:2.5rem;list-style:none;}
+    .nav-links a{font-family:'Share Tech Mono',monospace;font-size:0.7rem;letter-spacing:0.2em;color:var(--text-muted);text-decoration:none;text-transform:uppercase;transition:color 0.3s;}
+    .nav-links a:hover{color:var(--accent-cyan);}
+    .nav-status{display:flex;align-items:center;gap:0.5rem;font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--text-muted);}
+    .status-dot{width:6px;height:6px;border-radius:50%;background:#00ff88;animation:pulse 2s infinite;}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+
+    /* TICKER */
+    .ticker-bar{position:fixed;top:60px;left:0;right:0;z-index:999;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(0,229,255,0.02);overflow:hidden;padding:0.7rem 0;}
+    .ticker-inner{display:flex;gap:4rem;animation:ticker 30s linear infinite;white-space:nowrap;}
+    @keyframes ticker{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+    .ticker-item{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;color:var(--text-dim);flex-shrink:0;}
+    .ticker-item span{color:var(--accent-cyan);}
+
+    /* HERO */
+    #hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 2rem 4rem;z-index:1;}
+    .hero-tag{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.5em;color:var(--accent-cyan);text-transform:uppercase;margin-bottom:2rem;opacity:0;animation:fadeUp 0.8s 0.3s forwards;}
+    .hero-title{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(3.5rem,10vw,9rem);line-height:0.9;letter-spacing:-0.02em;text-transform:uppercase;color:var(--text-primary);text-shadow:0 0 80px rgba(0,229,255,0.2);opacity:0;animation:fadeUp 0.8s 0.5s forwards;}
+    .hero-title span{display:block;color:var(--accent-cyan);text-shadow:var(--glow-cyan);}
+    .hero-sub{margin-top:1.5rem;font-family:'Share Tech Mono',monospace;font-size:clamp(0.7rem,1.5vw,0.9rem);letter-spacing:0.25em;color:var(--text-muted);opacity:0;animation:fadeUp 0.8s 0.7s forwards;}
+    .hero-date{margin-top:3rem;display:flex;flex-direction:column;align-items:center;gap:0.5rem;opacity:0;animation:fadeUp 0.8s 0.9s forwards;}
+    .hero-date .label{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.4em;color:var(--text-dim);}
+    .hero-date .value{font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:700;color:var(--accent-gold);text-shadow:var(--glow-gold);letter-spacing:0.1em;}
+    .countdown{display:flex;gap:2rem;margin-top:1rem;justify-content:center;}
+    .countdown-unit{text-align:center;}
+    .countdown-num{font-family:'Orbitron',monospace;font-weight:900;font-size:2.5rem;color:var(--text-primary);display:block;line-height:1;}
+    .countdown-label{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.3em;color:var(--text-dim);text-transform:uppercase;}
+    .countdown-sep{font-family:'Orbitron',monospace;font-size:2rem;color:var(--text-dim);align-self:flex-start;padding-top:0.2rem;}
+    .hero-scroll{position:absolute;bottom:2rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:0.5rem;font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.3em;color:var(--text-dim);animation:bounce 2s infinite;}
+    .hero-scroll::after{content:'';display:block;width:1px;height:40px;background:linear-gradient(180deg,var(--accent-cyan),transparent);}
+    @keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(8px);}}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+
+    /* SECTIONS */
+    section{position:relative;z-index:1;padding:6rem 3rem;max-width:1400px;margin:0 auto;}
+    .section-tag{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.5em;color:var(--accent-cyan);text-transform:uppercase;margin-bottom:1rem;}
+    .section-title{font-family:'Orbitron',monospace;font-weight:700;font-size:clamp(1.8rem,4vw,3.5rem);line-height:1.1;margin-bottom:3rem;}
+    .divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--border-bright),transparent);margin:0 auto 4rem;}
+
+    /* LORE */
+    #lore{border-top:1px solid var(--border);}
+    .lore-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--border);}
+    .lore-panel{background:var(--panel);padding:3rem;position:relative;overflow:hidden;transition:background 0.3s;}
+    .lore-panel:hover{background:rgba(0,229,255,0.04);}
+    .lore-panel::before{content:attr(data-index);position:absolute;top:-1rem;right:1.5rem;font-family:'Orbitron',monospace;font-size:6rem;font-weight:900;color:rgba(0,229,255,0.04);line-height:1;user-select:none;}
+    .lore-panel h3{font-family:'Orbitron',monospace;font-weight:700;font-size:1rem;letter-spacing:0.1em;margin-bottom:1rem;color:var(--accent-cyan);}
+    .lore-panel p{font-size:0.9rem;line-height:1.8;color:rgba(232,244,255,0.65);}
+    .lore-panel .stat{margin-top:1.5rem;display:flex;gap:2rem;}
+    .stat-item{display:flex;flex-direction:column;gap:0.3rem;}
+    .stat-value{font-family:'Orbitron',monospace;font-size:1.4rem;font-weight:700;color:var(--accent-gold);}
+    .stat-label{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.2em;color:var(--text-dim);text-transform:uppercase;}
+
+    /* SHIP */
+    #ship{text-align:center;}
+    .ship-diagram{position:relative;width:100%;max-width:900px;margin:0 auto 4rem;height:340px;}
+    .ship-svg{width:100%;height:100%;}
+    .ship-legend{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);margin-top:2rem;}
+    .legend-item{background:var(--panel);padding:1.5rem;display:flex;align-items:flex-start;gap:1rem;}
+    .legend-dot{width:12px;height:12px;border-radius:50%;margin-top:4px;flex-shrink:0;}
+    .legend-dot.gold{background:var(--accent-gold);box-shadow:0 0 10px var(--accent-gold);}
+    .legend-dot.cyan{background:var(--accent-cyan);box-shadow:0 0 10px var(--accent-cyan);}
+    .legend-dot.purple{background:var(--accent-purple);box-shadow:0 0 10px var(--accent-purple);}
+    .legend-text h4{font-family:'Orbitron',monospace;font-size:0.75rem;font-weight:700;margin-bottom:0.4rem;}
+    .legend-text p{font-size:0.8rem;color:rgba(232,244,255,0.5);line-height:1.6;}
+
+    /* FLEET */
+    #fleet{border-top:1px solid var(--border);}
+    .fleet-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--border);margin-bottom:4rem;}
+    .fleet-stat{background:var(--panel);padding:2rem 1.5rem;text-align:center;}
+    .fleet-stat-value{font-family:'Orbitron',monospace;font-weight:900;font-size:2rem;color:var(--accent-cyan);text-shadow:var(--glow-cyan);display:block;margin-bottom:0.5rem;}
+    .fleet-stat-label{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;color:var(--text-dim);text-transform:uppercase;}
+
+    /* ENERGY */
+    #energy{border-top:1px solid var(--border);}
+    .energy-content{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;}
+    .energy-text p{font-size:0.9rem;line-height:1.9;color:rgba(232,244,255,0.6);margin-bottom:1rem;}
+    .energy-vis{height:320px;display:flex;align-items:center;justify-content:center;}
+
+    /* TICKETS */
+    #tickets{border-top:1px solid var(--border);}
+    .tickets-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);}
+    .ticket-card{background:var(--panel);padding:2.5rem;position:relative;overflow:hidden;transition:transform 0.4s cubic-bezier(0.23,1,0.32,1);cursor:pointer;}
+    .ticket-card:hover{transform:translateY(-4px);}
+    .ticket-card::after{content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.4s;pointer-events:none;}
+    .tier-low::after{background:radial-gradient(circle at 50% 100%,rgba(124,58,255,0.06),transparent 70%);}
+    .tier-mid::after{background:radial-gradient(circle at 50% 100%,rgba(0,229,255,0.06),transparent 70%);}
+    .tier-elite::after{background:radial-gradient(circle at 50% 100%,rgba(240,165,0,0.08),transparent 70%);}
+    .ticket-card:hover::after{opacity:1;}
+    .ticket-tier{font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.5em;text-transform:uppercase;margin-bottom:1.5rem;display:block;}
+    .tier-low .ticket-tier{color:var(--accent-purple);}
+    .tier-mid .ticket-tier{color:var(--accent-cyan);}
+    .tier-elite .ticket-tier{color:var(--accent-gold);}
+    .ticket-name{font-family:'Orbitron',monospace;font-weight:700;font-size:1.3rem;letter-spacing:0.05em;margin-bottom:0.5rem;}
+    .ticket-sub{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--text-dim);margin-bottom:2rem;letter-spacing:0.1em;}
+    .ticket-price{display:flex;align-items:baseline;gap:0.4rem;margin-bottom:2rem;}
+    .price-amount{font-family:'Orbitron',monospace;font-weight:900;font-size:2.8rem;}
+    .tier-low .price-amount{color:var(--accent-purple);text-shadow:0 0 20px rgba(124,58,255,0.5);}
+    .tier-mid .price-amount{color:var(--accent-cyan);text-shadow:var(--glow-cyan);}
+    .tier-elite .price-amount{color:var(--accent-gold);text-shadow:var(--glow-gold);}
+    .price-unit{font-family:'Share Tech Mono',monospace;font-size:0.7rem;color:var(--text-dim);}
+    .ticket-features{list-style:none;display:flex;flex-direction:column;gap:0.8rem;margin-bottom:2.5rem;}
+    .ticket-features li{display:flex;align-items:center;gap:0.8rem;font-size:0.82rem;color:rgba(232,244,255,0.6);}
+    .ticket-features li::before{content:'→';font-family:'Share Tech Mono',monospace;font-size:0.7rem;flex-shrink:0;}
+    .tier-low .ticket-features li::before{color:var(--accent-purple);}
+    .tier-mid .ticket-features li::before{color:var(--accent-cyan);}
+    .tier-elite .ticket-features li::before{color:var(--accent-gold);}
+    .ticket-btn{display:block;width:100%;padding:1rem;border:1px solid currentColor;background:transparent;font-family:'Orbitron',monospace;font-size:0.7rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;transition:all 0.3s;text-align:center;}
+    .tier-low .ticket-btn{color:var(--accent-purple);}
+    .tier-mid .ticket-btn{color:var(--accent-cyan);}
+    .tier-elite .ticket-btn{color:var(--accent-gold);}
+    .tier-low .ticket-btn:hover{background:rgba(124,58,255,0.12);box-shadow:0 0 20px rgba(124,58,255,0.2);}
+    .tier-mid .ticket-btn:hover{background:rgba(0,229,255,0.08);box-shadow:var(--glow-cyan);}
+    .tier-elite .ticket-btn:hover{background:rgba(240,165,0,0.08);box-shadow:var(--glow-gold);}
+    .ticket-badge{position:absolute;top:1.5rem;right:1.5rem;font-family:'Share Tech Mono',monospace;font-size:0.55rem;letter-spacing:0.15em;padding:0.3rem 0.7rem;border:1px solid;}
+    .tier-elite .ticket-badge{border-color:var(--accent-gold);color:var(--accent-gold);}
+    .tier-mid .ticket-badge{border-color:var(--accent-cyan);color:var(--accent-cyan);}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(2,4,8,0.95);z-index:9000;display:flex;align-items:center;justify-content:center;padding:2rem;opacity:0;pointer-events:none;transition:opacity 0.4s;backdrop-filter:blur(12px);}
+    .modal-overlay.open{opacity:1;pointer-events:all;}
+    .modal{background:var(--space-dark);border:1px solid var(--border-bright);max-width:560px;width:100%;padding:3rem;position:relative;transform:translateY(30px);transition:transform 0.4s cubic-bezier(0.23,1,0.32,1);box-shadow:var(--glow-cyan);}
+    .modal-overlay.open .modal{transform:translateY(0);}
+    .modal-close{position:absolute;top:1.5rem;right:1.5rem;background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer;font-family:'Share Tech Mono',monospace;letter-spacing:0.1em;}
+    .modal-close:hover{color:var(--accent-cyan);}
+    .modal h2{font-family:'Orbitron',monospace;font-weight:700;font-size:1.4rem;margin-bottom:0.5rem;color:var(--accent-cyan);}
+    .modal-tier{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.3em;color:var(--text-dim);margin-bottom:2rem;}
+    .form-group{margin-bottom:1.5rem;}
+    .form-group label{display:block;font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.25em;color:var(--text-muted);margin-bottom:0.5rem;text-transform:uppercase;}
+    .form-group input,.form-group select{width:100%;background:rgba(0,229,255,0.03);border:1px solid var(--border);color:var(--text-primary);padding:0.9rem 1rem;font-family:'Share Tech Mono',monospace;font-size:0.8rem;outline:none;transition:border-color 0.3s;appearance:none;}
+    .form-group input:focus,.form-group select:focus{border-color:var(--accent-cyan);box-shadow:var(--glow-cyan);}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+    .modal-total{border-top:1px solid var(--border);padding-top:1.5rem;margin-top:1.5rem;display:flex;justify-content:space-between;align-items:center;}
+    .modal-total .label{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;color:var(--text-dim);}
+    .modal-total .amount{font-family:'Orbitron',monospace;font-size:1.8rem;font-weight:900;color:var(--accent-cyan);}
+    .modal-submit{width:100%;padding:1.1rem;background:var(--accent-cyan);border:none;color:var(--deep-black);font-family:'Orbitron',monospace;font-weight:700;font-size:0.8rem;letter-spacing:0.2em;cursor:pointer;margin-top:1.5rem;transition:all 0.3s;text-transform:uppercase;}
+    .modal-submit:hover{background:white;box-shadow:var(--glow-cyan);}
+    .modal-success{display:none;text-align:center;}
+    .modal-success.show{display:block;}
+    .success-icon{font-size:3rem;margin-bottom:1.5rem;display:block;animation:glowPulse 1.5s infinite alternate;}
+    @keyframes glowPulse{from{text-shadow:0 0 20px var(--accent-cyan);}to{text-shadow:0 0 60px var(--accent-cyan),0 0 100px var(--accent-cyan);}}
+    .success-id{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.3em;color:var(--text-dim);margin-bottom:0.5rem;}
+    .success-code{font-family:'Orbitron',monospace;font-size:1.2rem;color:var(--accent-cyan);letter-spacing:0.2em;}
+
+    /* FOOTER */
+    footer{position:relative;z-index:1;border-top:1px solid var(--border);padding:4rem 3rem 2rem;max-width:1400px;margin:0 auto;}
+    .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;margin-bottom:3rem;}
+    .footer-brand .logo{font-family:'Orbitron',monospace;font-weight:900;font-size:1rem;letter-spacing:0.4em;color:var(--accent-cyan);text-shadow:var(--glow-cyan);display:block;margin-bottom:1rem;}
+    .footer-brand p{font-size:0.82rem;color:rgba(232,244,255,0.35);line-height:1.7;}
+    .footer-col h4{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.4em;color:var(--text-dim);text-transform:uppercase;margin-bottom:1.2rem;}
+    .footer-col ul{list-style:none;}
+    .footer-col ul li{margin-bottom:0.6rem;font-size:0.82rem;color:rgba(232,244,255,0.4);cursor:pointer;transition:color 0.3s;}
+    .footer-col ul li:hover{color:var(--accent-cyan);}
+    .footer-bottom{border-top:1px solid var(--border);padding-top:2rem;display:flex;justify-content:space-between;align-items:center;}
+    .footer-bottom span{font-family:'Share Tech Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;color:var(--text-dim);}
+
+    @media(max-width:900px){
+      nav{padding:1rem 1.5rem;}
+      .nav-links{display:none;}
+      section{padding:4rem 1.5rem;}
+      .lore-grid,.tickets-grid,.fleet-grid{grid-template-columns:1fr;}
+      .ship-legend{grid-template-columns:1fr;}
+      .energy-content{grid-template-columns:1fr;}
+      .footer-grid{grid-template-columns:1fr 1fr;}
+      .form-row{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+<div id="starfield"></div>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#">N2A</a>
+  <ul class="nav-links">
+    <li><a href="#lore">The World</a></li>
+    <li><a href="#ship">The Ships</a></li>
+    <li><a href="#fleet">The Fleet</a></li>
+    <li><a href="#tickets">Tickets</a></li>
+  </ul>
+  <div class="nav-status">
+    <div class="status-dot"></div>
+    ALL SYSTEMS OPERATIONAL
+  </div>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker-bar">
+  <div class="ticker-inner" id="tickerInner"></div>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <p class="hero-tag">/// Official Boarding — Cycle 2387 ///</p>
+  <h1 class="hero-title">NOTHING<br/><span>TO ADD</span></h1>
+  <p class="hero-sub">HUMANITY LEAVES EARTH · SECURE YOUR PLACE IN THE INFINITE</p>
+  <div class="hero-date">
+    <span class="label">BOARDING BEGINS</span>
+    <span class="value">09.14.2387</span>
+    <div class="countdown">
+      <div class="countdown-unit"><span class="countdown-num" id="cd-d">--</span><span class="countdown-label">Days</span></div>
+      <span class="countdown-sep">:</span>
+      <div class="countdown-unit"><span class="countdown-num" id="cd-h">--</span><span class="countdown-label">Hours</span></div>
+      <span class="countdown-sep">:</span>
+      <div class="countdown-unit"><span class="countdown-num" id="cd-m">--</span><span class="countdown-label">Min</span></div>
+      <span class="countdown-sep">:</span>
+      <div class="countdown-unit"><span class="countdown-num" id="cd-s">--</span><span class="countdown-label">Sec</span></div>
+    </div>
+  </div>
+  <div class="hero-scroll">SCROLL</div>
+</section>
+
+<!-- LORE -->
+<section id="lore">
+  <p class="section-tag">/// 01 — Background ///</p>
+  <h2 class="section-title">Earth is behind us.<br/>The infinite, ahead.</h2>
+  <div class="divider"></div>
+  <div class="lore-grid">
+    <div class="lore-panel" data-index="01">
+      <h3>The Necessary Exodus</h3>
+      <p>Earth's resources were exhausted by 2341. Humanity, facing extinction, undertook the greatest migration in its history. 20,000 world-ships powered by solar energy now traverse the cosmos — in search of new horizons, or simply survival.</p>
+      <div class="stat">
+        <div class="stat-item"><span class="stat-value">20,000</span><span class="stat-label">Active ships</span></div>
+        <div class="stat-item"><span class="stat-value">2341</span><span class="stat-label">Earth abandoned</span></div>
+      </div>
+    </div>
+    <div class="lore-panel" data-index="02">
+      <h3>The Matrix Model</h3>
+      <p>For the wealthy elite: the physical body kept in stasis inside hermetic pods, fed intravenously. Quantum cables link the brain to a perfect simulation. Biological death remains possible, but indefinitely postponed. The luxury of the real.</p>
+      <div class="stat">
+        <div class="stat-item"><span class="stat-value">16M</span><span class="stat-label">Pods per ship</span></div>
+        <div class="stat-item"><span class="stat-value">∞</span><span class="stat-label">Theoretical lifespan</span></div>
+      </div>
+    </div>
+    <div class="lore-panel" data-index="03">
+      <h3>Digital Consciousness</h3>
+      <p>For the common people: the mind uploaded, the body forgotten. Supercomputers house 64 million consciousnesses per ship in a layered simulation. The wealthy access large high-frequency apartments. The poor live in smaller, slower spaces.</p>
+      <div class="stat">
+        <div class="stat-item"><span class="stat-value">64M</span><span class="stat-label">Minds per ship</span></div>
+        <div class="stat-item"><span class="stat-value">3</span><span class="stat-label">Server tiers</span></div>
+      </div>
+    </div>
+    <div class="lore-panel" data-index="04">
+      <h3>The Unit Economy</h3>
+      <p>On the Common Server, life goes on: commerce, work, entertainment. The official currency is the In-Game Unit (IGU), earned by working just as on Earth. Rent bigger apartments, upgrade your server, or access premium simulation zones.</p>
+      <div class="stat">
+        <div class="stat-item"><span class="stat-value">IGU</span><span class="stat-label">Official currency</span></div>
+        <div class="stat-item"><span class="stat-value">3</span><span class="stat-label">Distinct servers</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SHIP DIAGRAM -->
+<section id="ship">
+  <p class="section-tag">/// 02 — Architecture ///</p>
+  <h2 class="section-title">Anatomy of a World-Ship</h2>
+  <div class="divider"></div>
+  <div class="ship-diagram">
+    <svg class="ship-svg" viewBox="0 0 900 340" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="goldGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f0a500" stop-opacity="0.6"/><stop offset="100%" stop-color="#f0a500" stop-opacity="0.05"/></radialGradient>
+        <radialGradient id="cyanGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#00e5ff" stop-opacity="0.3"/><stop offset="100%" stop-color="#00e5ff" stop-opacity="0.02"/></radialGradient>
+        <radialGradient id="purpleGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#7c3aff" stop-opacity="0.25"/><stop offset="100%" stop-color="#7c3aff" stop-opacity="0.02"/></radialGradient>
+        <filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <ellipse cx="450" cy="170" rx="400" ry="130" fill="none" stroke="#1e3a52" stroke-width="1.5"/>
+      <ellipse cx="450" cy="170" rx="400" ry="130" fill="url(#purpleGrad)"/>
+      <line x1="850" y1="170" x2="885" y2="118" stroke="#7c3aff" stroke-width="0.8" opacity="0.6"/>
+      <text x="887" y="116" fill="#7c3aff" font-family="Share Tech Mono,monospace" font-size="10" opacity="0.8">HULL — ROBOTIC ZONE</text>
+      <ellipse cx="450" cy="170" rx="300" ry="95" fill="url(#cyanGrad)" stroke="#00e5ff" stroke-width="0.8" stroke-opacity="0.4"/>
+      <line x1="750" y1="175" x2="885" y2="198" stroke="#00e5ff" stroke-width="0.8" opacity="0.6"/>
+      <text x="887" y="196" fill="#00e5ff" font-family="Share Tech Mono,monospace" font-size="10" opacity="0.8">MANTLE — DATA-CENTER</text>
+      <ellipse cx="450" cy="170" rx="150" ry="55" fill="url(#goldGrad)" stroke="#f0a500" stroke-width="1.2" stroke-opacity="0.7" filter="url(#glow)"/>
+      <line x1="600" y1="175" x2="885" y2="268" stroke="#f0a500" stroke-width="0.8" opacity="0.6"/>
+      <text x="887" y="266" fill="#f0a500" font-family="Share Tech Mono,monospace" font-size="10" opacity="0.8">CORE — SANCTUARY</text>
+      <line x1="10" y1="170" x2="50" y2="170" stroke="#f0a500" stroke-width="1.5" opacity="0.5"/>
+      <line x1="850" y1="170" x2="890" y2="170" stroke="#f0a500" stroke-width="1.5" opacity="0.5"/>
+      <line x1="50" y1="310" x2="850" y2="310" stroke="#1e3a52" stroke-width="1"/>
+      <text x="450" y="328" fill="#1e3a52" font-family="Share Tech Mono,monospace" font-size="9" text-anchor="middle">← 15 KILOMETERS →</text>
+      <line x1="20" y1="40" x2="20" y2="300" stroke="#1e3a52" stroke-width="1"/>
+      <text x="14" y="175" fill="#1e3a52" font-family="Share Tech Mono,monospace" font-size="9" text-anchor="middle" transform="rotate(-90,14,175)">4 KM</text>
+      <circle cx="450" cy="170" r="8" fill="#f0a500" opacity="0.9" filter="url(#glow)"/>
+    </svg>
+  </div>
+  <div class="ship-legend">
+    <div class="legend-item">
+      <div class="legend-dot gold"></div>
+      <div class="legend-text">
+        <h4>The Core — The Sanctuary</h4>
+        <p>16 million stasis pods at the absolute center. Maximum shielding against cosmic radiation, micro-meteorites and solar storms.</p>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot cyan"></div>
+      <div class="legend-text">
+        <h4>The Mantle — The Data-Center</h4>
+        <p>64 million digital consciousnesses in vast server arrays. A living digital shield protecting the physical bodies of the elite within.</p>
+      </div>
+    </div>
+    <div class="legend-item">
+      <div class="legend-dot purple"></div>
+      <div class="legend-text">
+        <h4>The Hull — Mechanical Zone</h4>
+        <p>16 million maintenance robots. Giant batteries, airlocks, charging bays and deployment mechanisms for the solar sails.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FLEET -->
+<section id="fleet">
+  <p class="section-tag">/// 03 — The Fleet ///</p>
+  <h2 class="section-title">A civilization among the stars</h2>
+  <div class="divider"></div>
+  <div class="fleet-grid">
+    <div class="fleet-stat"><span class="fleet-stat-value" data-target="20000">0</span><span class="fleet-stat-label">World-Ships</span></div>
+    <div class="fleet-stat"><span class="fleet-stat-value" data-target="1280">0</span><span class="fleet-stat-label">Billion Inhabitants</span></div>
+    <div class="fleet-stat"><span class="fleet-stat-value" data-target="320">0</span><span class="fleet-stat-label">Million Robots</span></div>
+    <div class="fleet-stat"><span class="fleet-stat-value" data-target="100">0</span><span class="fleet-stat-label">% Renewable Energy</span></div>
+  </div>
+</section>
+
+<!-- ENERGY -->
+<section id="energy">
+  <p class="section-tag">/// 04 — Energy ///</p>
+  <h2 class="section-title">The Dyson Swarm</h2>
+  <div class="divider"></div>
+  <div class="energy-content">
+    <div class="energy-text">
+      <p>The human fleet draws its power from an unprecedented technology: the Dyson Swarm. Billions of independent collector satellites orbit encountered stars, capturing their radiation and redistributing energy to each ship via directional microwave beams.</p>
+      <p>Each ship can deploy its own autonomous mini-satellites to maximize its energy harvest, or connect to the collective Swarm network in exchange for shared computational resources.</p>
+      <p>The system is inherently scalable: every element is independent, added or removed without affecting the whole. A galactic infrastructure that grows with humanity — indefinitely.</p>
+    </div>
+    <div class="energy-vis">
+      <svg viewBox="0 0 320 320" width="300" height="300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="sGrad" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#fff7d6"/><stop offset="40%" stop-color="#f0a500" stop-opacity="0.8"/><stop offset="100%" stop-color="#ff6600" stop-opacity="0"/></radialGradient>
+          <filter id="sGlow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <circle cx="160" cy="160" r="60" fill="#f0a500" opacity="0.08"/>
+        <circle cx="160" cy="160" r="40" fill="#f0a500" opacity="0.15"/>
+        <circle cx="160" cy="160" r="28" fill="url(#sGrad)" filter="url(#sGlow)"/>
+        <ellipse cx="160" cy="160" rx="70"  ry="70"  fill="none" stroke="#1e3a52" stroke-width="0.5" stroke-dasharray="4 4"/>
+        <ellipse cx="160" cy="160" rx="100" ry="100" fill="none" stroke="#1e3a52" stroke-width="0.5" stroke-dasharray="4 4"/>
+        <ellipse cx="160" cy="160" rx="135" ry="135" fill="none" stroke="#1e3a52" stroke-width="0.5" stroke-dasharray="4 4"/>
+        <g style="animation:ro1 8s linear infinite;transform-origin:160px 160px">
+          <rect x="225" y="157" width="8" height="6" rx="1" fill="#00e5ff" opacity="0.9"/>
+          <rect x="93"  y="157" width="8" height="6" rx="1" fill="#00e5ff" opacity="0.9"/>
+          <rect x="157" y="225" width="6" height="8" rx="1" fill="#00e5ff" opacity="0.9"/>
+          <rect x="157" y="87"  width="6" height="8" rx="1" fill="#00e5ff" opacity="0.9"/>
+        </g>
+        <g style="animation:ro2 14s linear infinite;transform-origin:160px 160px">
+          <rect x="257" y="157" width="8" height="6" rx="1" fill="#7c3aff" opacity="0.7"/>
+          <rect x="55"  y="157" width="8" height="6" rx="1" fill="#7c3aff" opacity="0.7"/>
+          <rect x="157" y="257" width="6" height="8" rx="1" fill="#7c3aff" opacity="0.7"/>
+          <rect x="157" y="55"  width="6" height="8" rx="1" fill="#7c3aff" opacity="0.7"/>
+        </g>
+        <style>@keyframes ro1{to{transform:rotate(360deg);}}@keyframes ro2{to{transform:rotate(-360deg);}}</style>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- TICKETS -->
+<section id="tickets">
+  <p class="section-tag">/// 05 — Booking ///</p>
+  <h2 class="section-title">Choose your existence</h2>
+  <div class="divider"></div>
+  <div class="tickets-grid">
+
+    <div class="ticket-card tier-low" onclick="openModal('Digital Consciousness — Basic Level','STANDARD-SERVER · COMMON SHIP',399,'IGU')">
+      <span class="ticket-tier">Tier 01 — Common</span>
+      <h3 class="ticket-name">Basic Consciousness</h3>
+      <p class="ticket-sub">STANDARD SERVER · LIMITED SPACE</p>
+      <div class="ticket-price"><span class="price-amount">399</span><span class="price-unit">IGU / cycle</span></div>
+      <ul class="ticket-features">
+        <li>18m² virtual studio (standard server)</li>
+        <li>Access to the Common Server</li>
+        <li>Basic work, commerce &amp; leisure</li>
+        <li>Simulation latency: 40ms</li>
+        <li>Server upgrade available (paid)</li>
+      </ul>
+      <button class="ticket-btn">Reserve my spot →</button>
+    </div>
+
+    <div class="ticket-card tier-mid" onclick="openModal('Digital Consciousness — Mid Level','ENHANCED-SERVER · STANDARD SHIP',890,'IGU')">
+      <span class="ticket-badge">POPULAR</span>
+      <span class="ticket-tier">Tier 02 — Standard</span>
+      <h3 class="ticket-name">Extended Consciousness</h3>
+      <p class="ticket-sub">ENHANCED SERVER · DECENT COMFORT</p>
+      <div class="ticket-price"><span class="price-amount">890</span><span class="price-unit">IGU / cycle</span></div>
+      <ul class="ticket-features">
+        <li>55m² virtual apartment (server+)</li>
+        <li>Full Common Server access</li>
+        <li>Premium job listings available</li>
+        <li>Simulation latency: 12ms</li>
+        <li>Extended entertainment zones</li>
+      </ul>
+      <button class="ticket-btn">Reserve my spot →</button>
+    </div>
+
+    <div class="ticket-card tier-elite" onclick="openModal('Physical Body — Matrix Stasis','SANCTUARY-GOLD · ELITE SHIP',49000,'IGU')">
+      <span class="ticket-badge">ELITE</span>
+      <span class="ticket-tier">Tier 03 — Elite</span>
+      <h3 class="ticket-name">Matrix Stasis</h3>
+      <p class="ticket-sub">SHIP CORE · PHYSICAL BODY</p>
+      <div class="ticket-price"><span class="price-amount">49K</span><span class="price-unit">IGU / cycle</span></div>
+      <ul class="ticket-features">
+        <li>Individual stasis pod — absolute center</li>
+        <li>Physical body maintained &amp; nourished</li>
+        <li>High-fidelity simulation (dedicated server)</li>
+        <li>Simulation latency: 0.3ms</li>
+        <li>Guaranteed biological survival</li>
+      </ul>
+      <button class="ticket-btn">Reserve my spot →</button>
+    </div>
+
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="logo">N2A</span>
+      <p>Nothing To Add is the official authority for seat allocation aboard the human fleet. All reservations are final. The migration is irreversible.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Navigate</h4>
+      <ul><li>The World</li><li>The Ships</li><li>Booking</li><li>The Fleet</li></ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul><li>Boarding Terms</li><li>Neural Data Policy</li><li>Stasis Protocol</li><li>IGU Charter</li></ul>
+    </div>
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul><li>Boarding FAQ</li><li>Terminal Contact</li><li>Medical Emergency</li><li>Report an Anomaly</li></ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2387 NOTHING TO ADD — GALACTIC MIGRATION AUTHORITY</span>
+    <span>WORLD-SHIP WT-4471 · IN ORBIT</span>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModalDirect()">[ CLOSE ]</button>
+    <div id="modalForm">
+      <h2 id="modalTitle"></h2>
+      <p class="modal-tier" id="modalTier"></p>
+      <div class="form-group">
+        <label>Neural Identifier (full name)</label>
+        <input type="text" placeholder="e.g. SMITH John-Alexander" id="inputName"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Consciousness Code</label>
+          <input type="text" placeholder="XXXX-XXXX-XXXX" maxlength="14" id="inputCode"/>
+        </div>
+        <div class="form-group">
+          <label>Origin Sector</label>
+          <select id="inputSector">
+            <option value="">— Select —</option>
+            <option>Europe-Node</option>
+            <option>Asia-Core</option>
+            <option>Americas-Grid</option>
+            <option>Africa-Nexus</option>
+            <option>Pacific-Relay</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Preferred Ship (optional)</label>
+        <select id="inputShip">
+          <option value="">— Auto-assignment —</option>
+          <option>WT-0001 — Pioneer Ship</option>
+          <option>WT-4471 — Ship of Promise</option>
+          <option>WT-7899 — Ship of Dawn</option>
+          <option>WT-9999 — Terminus Ship</option>
+        </select>
+      </div>
+      <div class="modal-total">
+        <span class="label">TOTAL</span>
+        <span class="amount" id="modalPrice">—</span>
+      </div>
+      <button class="modal-submit" onclick="submitForm()">CONFIRM BOARDING</button>
+    </div>
+    <div id="modalSuccess" class="modal-success">
+      <span class="success-icon">◈</span>
+      <h2 style="color:var(--accent-cyan);font-family:'Orbitron',monospace;margin-bottom:0.5rem;">BOARDING CONFIRMED</h2>
+      <p style="color:rgba(232,244,255,0.5);font-size:0.85rem;margin-bottom:1.5rem;">Your place in the fleet is secured.</p>
+      <p class="success-id">RESERVATION CODE</p>
+      <p class="success-code" id="successCode">—</p>
+      <p style="color:rgba(232,244,255,0.35);font-size:0.75rem;margin-top:1.5rem;font-family:'Share Tech Mono',monospace;letter-spacing:0.1em;">Keep this code. It is your identity in the fleet.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // STARS
+  const sf = document.getElementById('starfield');
+  for(let i=0;i<300;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;--dur:${2+Math.random()*4}s;--delay:${Math.random()*4}s;--min:${0.05+Math.random()*0.2};--max:${0.4+Math.random()*0.6};width:${Math.random()<0.97?'1px':'2px'};height:${Math.random()<0.97?'1px':'2px'};`;
+    sf.appendChild(s);
+  }
+
+  // TICKER
+  const ticks=[
+    'SHIP WT-4471 — DEPARTURE IN <span>132 DAYS</span>',
+    'REMAINING MATRIX STASIS SLOTS: <span>4,221</span>',
+    'COMMON SERVER — UPDATE 2.8.1 DEPLOYED',
+    'DYSON SWARM — NOMINAL COLLECTION: <span>99.7%</span>',
+    'CONSCIOUSNESSES REGISTERED THIS CYCLE: <span>+14,882</span>',
+    'ALERT: SECTOR ZETA — MINOR SOLAR STORM',
+    'FLEET: ALL SYSTEMS OPERATIONAL',
+    'NEXT BOARDING WINDOW: <span>09.14.2387</span>',
+  ];
+  const ti=document.getElementById('tickerInner');
+  [...ticks,...ticks].forEach(t=>{const sp=document.createElement('span');sp.className='ticker-item';sp.innerHTML='■ '+t+' ';ti.appendChild(sp);});
+
+  // COUNTDOWN
+  function tick(){
+    const diff=new Date('2026-09-14T10:00:00')-new Date();
+    if(diff>0){
+      document.getElementById('cd-d').textContent=String(Math.floor(diff/86400000)).padStart(3,'0');
+      document.getElementById('cd-h').textContent=String(Math.floor((diff%86400000)/3600000)).padStart(2,'0');
+      document.getElementById('cd-m').textContent=String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
+      document.getElementById('cd-s').textContent=String(Math.floor((diff%60000)/1000)).padStart(2,'0');
+    }
+  }
+  tick(); setInterval(tick,1000);
+
+  // COUNTER ANIMATION
+  new IntersectionObserver(entries=>{
+    if(entries[0].isIntersecting){
+      document.querySelectorAll('.fleet-stat-value[data-target]').forEach(el=>{
+        const target=parseInt(el.dataset.target);
+        let n=0,step=Math.ceil(target/60);
+        const t=setInterval(()=>{n=Math.min(n+step,target);el.textContent=n.toLocaleString()+(target===100?'%':'+');if(n>=target)clearInterval(t);},30);
+      });
+      entries[0].target.__ob.disconnect();
+    }
+  },{threshold:0.3}).observe(Object.assign(document.getElementById('fleet'),{__ob:null}));
+  // fix self-reference
+  (()=>{const fl=document.getElementById('fleet');const ob=new IntersectionObserver(e=>{if(e[0].isIntersecting){document.querySelectorAll('.fleet-stat-value[data-target]').forEach(el=>{const target=parseInt(el.dataset.target);let n=0,step=Math.ceil(target/60);const t=setInterval(()=>{n=Math.min(n+step,target);el.textContent=n.toLocaleString()+(target===100?'%':'+');if(n>=target)clearInterval(t);},30);});ob.disconnect();}},{threshold:0.3});ob.observe(fl);})();
+
+  // MODAL
+  function openModal(title,tier,price,unit){
+    document.getElementById('modalTitle').textContent=title;
+    document.getElementById('modalTier').textContent=tier;
+    document.getElementById('modalPrice').textContent=price.toLocaleString()+' '+unit;
+    ['inputName','inputCode','inputSector','inputShip'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('modalForm').style.display='block';
+    document.getElementById('modalSuccess').classList.remove('show');
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+  function closeModal(e){if(e.target===document.getElementById('modalOverlay'))closeModalDirect();}
+  function closeModalDirect(){document.getElementById('modalOverlay').classList.remove('open');}
+
+  document.getElementById('inputCode').addEventListener('input',function(e){
+    let v=e.target.value.replace(/[^A-Z0-9a-z]/g,'').toUpperCase();
+    if(v.length>4&&v.length<=8)v=v.slice(0,4)+'-'+v.slice(4);
+    else if(v.length>8)v=v.slice(0,4)+'-'+v.slice(4,8)+'-'+v.slice(8,12);
+    e.target.value=v;
+  });
+
+  function submitForm(){
+    const name=document.getElementById('inputName').value.trim();
+    const code=document.getElementById('inputCode').value.trim();
+    const sector=document.getElementById('inputSector').value;
+    if(!name||!code||!sector){alert('Please fill in all required fields.');return;}
+    const rc='NTA-'+Math.random().toString(36).substr(2,4).toUpperCase()+'-'+Math.random().toString(36).substr(2,4).toUpperCase()+'-'+Date.now().toString(36).toUpperCase().slice(-4);
+    document.getElementById('modalForm').style.display='none';
+    document.getElementById('successCode').textContent=rc;
+    document.getElementById('modalSuccess').classList.add('show');
+  }
+
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModalDirect();});
+</script>
+</body>
+</html>
